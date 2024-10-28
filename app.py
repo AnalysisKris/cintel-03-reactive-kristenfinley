@@ -62,7 +62,7 @@ with ui.sidebar(open="open"):
     # Link to GitHub repo
     ui.tags.div(
         ui.a(
-            "GitHub Code Repository-- KF",
+            "GitHub Code Repository- KF",
             href="https://github.com/AnalysisKris/cintel-03-reactive-kristenfinley",
             target="_blank",
         ),
@@ -77,7 +77,7 @@ with ui.layout_columns():
 
         @render.data_frame
         def penguin_datatable():
-            return penguins_df
+            return filtered_data()  # Use filtered data
 
     # Data Grid card
     with ui.card():
@@ -85,7 +85,7 @@ with ui.layout_columns():
 
         @render.data_frame
         def penguin_datagrid():
-            return penguins_df
+            return filtered_data()  # Use filtered data
 
 # Add a reactive calculation to filter the data
 @reactive.calc
@@ -102,7 +102,7 @@ with ui.layout_columns():
             @render_plotly
             def plotly_histogram():
                 plotly_hist = px.histogram(
-                    data_frame=filtered_data(),
+                    data_frame=filtered_data(),  # Use filtered data
                     x=input.selected_attribute(),
                     nbins=input.plotly_bin_count(),
                     color="species",
@@ -123,7 +123,7 @@ with ui.layout_columns():
             def seaborn_histogram():
                 plt.figure(facecolor='#ffebee')  # Set lighter pink background for Seaborn plots
                 seaborn_hist = sns.histplot(
-                    data=filtered_data(),
+                    data=filtered_data(),  # Use filtered data
                     x=input.selected_attribute(),
                     bins=input.seaborn_bin_count(),
                     color="#5e4b8a",  # Dark purple color for Seaborn
@@ -141,7 +141,7 @@ with ui.layout_columns():
             @render_plotly
             def plotly_scatterplot():
                 plotly_scatter = px.scatter(
-                    filtered_data(),
+                    data_frame=filtered_data(),  # Use filtered data
                     x="bill_length_mm",
                     y="bill_depth_mm",
                     color="species",
@@ -164,7 +164,7 @@ with ui.layout_columns():
             @render_plotly
             def grouped_bar_plot():
                 grouped_bar = px.bar(
-                    filtered_data(),
+                    data_frame=filtered_data(),  # Use filtered data
                     x="island",
                     y="bill_length_mm",
                     color="species",
