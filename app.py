@@ -62,7 +62,7 @@ with ui.sidebar(open="open"):
     # Link to GitHub repo
     ui.tags.div(
         ui.a(
-            "GitHub Code Repository",
+            "GitHub Code Repository-- KF",
             href="https://github.com/AnalysisKris/cintel-03-reactive-kristenfinley",
             target="_blank",
         ),
