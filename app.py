@@ -76,20 +76,20 @@ with ui.layout_columns():
         ui.card_header("Data Table")
 
         @render.data_frame
-        def penguin_datatable():
-            return filtered_data()  # Use filtered data
+        async def penguin_datatable():
+            return await filtered_data()  # Use filtered data
 
     # Data Grid card
     with ui.card():
         ui.card_header("Data Grid")
 
         @render.data_frame
-        def penguin_datagrid():
-            return filtered_data()  # Use filtered data
+        async def penguin_datagrid():
+            return await filtered_data()  # Use filtered data
 
 # Add a reactive calculation to filter the data
 @reactive.calc
-def filtered_data():
+async def filtered_data():
     return penguins_df[penguins_df["species"].isin(input.selected_species_list())]
 
 # Layout columns for visualizations
@@ -100,80 +100,108 @@ with ui.layout_columns():
         with ui.nav_panel("Plotly Histogram"):
 
             @render_plotly
-            def plotly_histogram():
-                plotly_hist = px.histogram(
-                    data_frame=filtered_data(),  # Use filtered data
-                    x=input.selected_attribute(),
-                    nbins=input.plotly_bin_count(),
-                    color="species",
-                    color_discrete_sequence=["#5e4b8a", "#a55e8b", "#d59b84"],  # Dark purple shades
-                ).update_layout(
-                    title="Plotly Penguins Data by Attribute",
-                    xaxis_title="Selected Attribute",
-                    yaxis_title="Count",
-                    plot_bgcolor='#ffebee',  # Lighter pink background
-                    paper_bgcolor='#ffebee',  # Lighter pink paper background
-                )
-                return plotly_hist
+            async def plotly_histogram():
+                try:
+                    data = await filtered_data()  # Get the current data
+                    if data.empty:
+                        return None  # If no data, do not attempt to render the plot
+                    plotly_hist = px.histogram(
+                        data_frame=data,
+                        x=input.selected_attribute(),
+                        nbins=input.plotly_bin_count(),
+                        color="species",
+                        color_discrete_sequence=["#5e4b8a", "#a55e8b", "#d59b84"],
+                    ).update_layout(
+                        title="Plotly Penguins Data by Attribute",
+                        xaxis_title="Selected Attribute",
+                        yaxis_title="Count",
+                        plot_bgcolor='#ffebee',
+                        paper_bgcolor='#ffebee',
+                    )
+                    return plotly_hist
+                except Exception as e:
+                    print("Error generating Plotly histogram:", e)
+                    return None  # Optionally return a placeholder or None if an error occurs
 
         # Seaborn Histogram tab
         with ui.nav_panel("Seaborn Histogram"):
 
             @render.plot
-            def seaborn_histogram():
-                plt.figure(facecolor='#ffebee')  # Set lighter pink background for Seaborn plots
-                seaborn_hist = sns.histplot(
-                    data=filtered_data(),  # Use filtered data
-                    x=input.selected_attribute(),
-                    bins=input.seaborn_bin_count(),
-                    color="#5e4b8a",  # Dark purple color for Seaborn
-                )
-                seaborn_hist.set_title("Seaborn Penguin Data by Attribute")
-                seaborn_hist.set_xlabel("Selected Attribute")
-                seaborn_hist.set_ylabel("Count")
-                plt.gca().set_facecolor('#ffebee')  # Set lighter pink background for the plot area
-                plt.tight_layout()
-                return seaborn_hist
+            async def seaborn_histogram():
+                try:
+                    data = await filtered_data()
+                    if data.empty:
+                        return None
+                    plt.figure(facecolor='#ffebee')
+                    seaborn_hist = sns.histplot(
+                        data=data,
+                        x=input.selected_attribute(),
+                        bins=input.seaborn_bin_count(),
+                        color="#5e4b8a",
+                    )
+                    seaborn_hist.set_title("Seaborn Penguin Data by Attribute")
+                    seaborn_hist.set_xlabel("Selected Attribute")
+                    seaborn_hist.set_ylabel("Count")
+                    plt.gca().set_facecolor('#ffebee')
+                    plt.tight_layout()
+                    return seaborn_hist
+                except Exception as e:
+                    print("Error generating Seaborn histogram:", e)
+                    return None
 
         # Plotly Scatterplot tab
         with ui.nav_panel("Plotly Scatterplot"):
 
             @render_plotly
-            def plotly_scatterplot():
-                plotly_scatter = px.scatter(
-                    data_frame=filtered_data(),  # Use filtered data
-                    x="bill_length_mm",
-                    y="bill_depth_mm",
-                    color="species",
-                    size_max=8,
-                    title="Plotly Scatterplot: Bill Depth and Length",
-                    labels={
-                        "bill_depth_mm": "Bill Depth (mm)",
-                        "bill_length_mm": "Bill Length (mm)",
-                    },
-                    color_discrete_sequence=["#5e4b8a", "#a55e8b", "#d59b84"],  # Dark purple shades
-                ).update_layout(
-                    plot_bgcolor='#ffebee',  # Lighter pink background
-                    paper_bgcolor='#ffebee',  # Lighter pink paper background
-                )
-                return plotly_scatter
+            async def plotly_scatterplot():
+                try:
+                    data = await filtered_data()
+                    if data.empty:
+                        return None
+                    plotly_scatter = px.scatter(
+                        data_frame=data,
+                        x="bill_length_mm",
+                        y="bill_depth_mm",
+                        color="species",
+                        size_max=8,
+                        title="Plotly Scatterplot: Bill Depth and Length",
+                        labels={
+                            "bill_depth_mm": "Bill Depth (mm)",
+                            "bill_length_mm": "Bill Length (mm)",
+                        },
+                        color_discrete_sequence=["#5e4b8a", "#a55e8b", "#d59b84"],
+                    ).update_layout(
+                        plot_bgcolor='#ffebee',
+                        paper_bgcolor='#ffebee',
+                    )
+                    return plotly_scatter
+                except Exception as e:
+                    print("Error generating Plotly scatterplot:", e)
+                    return None
 
         # Grouped Bar Plot tab
         with ui.nav_panel("Grouped Bar Plot"):
 
             @render_plotly
-            def grouped_bar_plot():
-                grouped_bar = px.bar(
-                    data_frame=filtered_data(),  # Use filtered data
-                    x="island",
-                    y="bill_length_mm",
-                    color="species",
-                    barmode="group",
-                    title="Average Bill Length by Island",
-                    labels={"bill_length_mm": "Average Bill Length (mm)"},
-                    color_discrete_sequence=["#5e4b8a", "#a55e8b", "#d59b84"],  # Dark purple shades
-                ).update_layout(
-                    plot_bgcolor='#ffebee',  # Lighter pink background
-                    paper_bgcolor='#ffebee',  # Lighter pink paper background
-                )
-                return grouped_bar
+            async def grouped_bar_plot():
+                try:
+                    data = await filtered_data()
+                    if data.empty:
+                        return None
+                    grouped_bar = px.bar(
+                        data_frame=data,
+                        x="island",
+                        y="bill_length_mm",
+                        color="species",
+                        barmode="group",
+                        title="Average Bill Length by Island",
+                        labels={"bill_length_mm": "Average Bill Length (mm)"},
+                        color_discrete_sequence=["#5e4b8a", "#a55e8b", "#d59b84"],
+                    ).update_layout(
+                        plot_bgcolor='#ffebee',
+                        paper_bgcolor='#ffebee',
+                    )
+                    return grouped_bar
+                except Exception as e:
+                    print("Error generating grouped bar plot:", e)
+                    return None
